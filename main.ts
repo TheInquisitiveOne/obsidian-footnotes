@@ -1,4 +1,5 @@
 import { Editor, EditorPosition, MarkdownView, Plugin } from "obsidian";
+import { clearScreenDown } from "readline";
 
 export default class MyPlugin extends Plugin {
   private detailLineRegex = /\[\^(\d+)\]\:/;
@@ -175,6 +176,7 @@ export default class MyPlugin extends Plugin {
     let lastLineIndex = doc.lastLine();
     let lastLine = doc.getLine(lastLineIndex);
 
+    console.log("lastlines:", lastLineIndex, lastLine);
     while (lastLineIndex > 0) {
       lastLine = doc.getLine(lastLineIndex);
       if (lastLine.length > 0) {
@@ -190,7 +192,7 @@ export default class MyPlugin extends Plugin {
 
     let footnoteDetail = `\n[^${footNoteId}]: `;
 
-    if (currentMax == 1) {
+    if (currentMax == 0) {
       footnoteDetail = "\n" + footnoteDetail;
     }
 
