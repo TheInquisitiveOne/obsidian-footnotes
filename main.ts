@@ -175,8 +175,8 @@ export default class MyPlugin extends Plugin {
 
     let lastLineIndex = doc.lastLine();
     let lastLine = doc.getLine(lastLineIndex);
-
     console.log("lastlines:", lastLineIndex, lastLine);
+
     while (lastLineIndex > 0) {
       lastLine = doc.getLine(lastLineIndex);
       if (lastLine.length > 0) {
@@ -190,13 +190,17 @@ export default class MyPlugin extends Plugin {
       lastLineIndex--;
     }
 
+    console.log("lastlines1:", lastLineIndex, lastLine, currentMax);
     let footnoteDetail = `\n[^${footNoteId}]: `;
 
-    if (currentMax == 0) {
+    if (currentMax == 1) {
+      console.log(currentMax);
       footnoteDetail = "\n" + footnoteDetail;
+      doc.setLine(doc.lastLine(), lastLine + footnoteDetail);
+      doc.setCursor(doc.lastLine() - 1, footnoteDetail.length - 1);
+    } else {
+      doc.setLine(doc.lastLine(), lastLine + footnoteDetail);
+      doc.setCursor(doc.lastLine(), footnoteDetail.length - 1);
     }
-
-    doc.setLine(doc.lastLine(), lastLine + footnoteDetail);
-    doc.setCursor(doc.lastLine(), footnoteDetail.length - 1);
   }
 }
