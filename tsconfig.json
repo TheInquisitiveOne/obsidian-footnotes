@@ -14,7 +14,8 @@
       "es5",
       "scripthost",
       "es2015",
-      "es2020.string"
+      "es2020.string",
+      "es2017"
     ]
   },
   "include": [
