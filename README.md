@@ -2,53 +2,68 @@
 
 This hotkey lets you:
 
-- Insert a new footnote marker (e.g. `[^1]`) with auto-incremented index in your text 
-    - Adds the footnote detail (e.g. `[^1]: `) at the bottom of your text 
-    - Places your cursor so you can fill in the details quickly
+- Insert a new numbered footnote marker (e.g. `[^1]`) with auto-incremented index in your text 
+- Insert a new named footnote marker (e.g. `[^Citation]`) in your text
+- Adds the corresponding footnote detail (e.g. `[^1]: ` or `[^Citation]: `) at the bottom of your text     
+- Places your cursor so you can fill in the details quickly
 - Jump from your footnote TO the footnote detail
-- Jump from your footnote detail BACK to the footnote 
+- Jump from your footnote detail BACK to the footnote
 
-![Overview](https://user-images.githubusercontent.com/11269635/171957154-4cd6b82c-729c-4b0e-b9e5-8a087f746165.gif)
+![Overview](https://user-images.githubusercontent.com/68677082/228686351-fe71a0ec-be56-4d70-93c1-01925dd6380f.gif)
 
-## IMPORTANT: You must to set up your footnote hotkey
+## IMPORTANT: You must to set up your footnote hotkeys
 
-After installing and activating this plugin, you still have to SET UP your hotkey. This is easy and quick:
+After installing and activating this plugin, you still have to SET UP your hotkeys. This is easy and quick:
 
-`Settings -> Hotkeys -> Search for "Footnote" -> Customize Command -> Your preferred hotkey`
+`Settings -> Hotkeys -> Search for "Footnote" -> Customize Command -> Your preferred hotkeys`
 
-I personally use <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>6</kbd> because "6" on a US keyboard is where the uptick/footnote character "^" is.
+I personally use: 
+- <kbd>Alt</kbd>+<kbd>0</kbd> as my auto-numbered footnote hotkey
+- <kbd>Alt</kbd>+<kbd>-</kbd> as my named footnote hotkey
 
-![Hotkey](https://user-images.githubusercontent.com/11269635/171957175-ba2229d1-d82e-44ad-bf3c-6055316308c7.png)
+![Hotkey](https://user-images.githubusercontent.com/68677082/228659877-8ea81271-37c4-4fdf-99de-1d4b6ca1c85f.png)
 
 ## Default Feature Details
-### Scenario: No previous numeric (e.g. "[^1]") footnotes exist:
-- Given my cursor is where I want a footnote to exist (e.g. `Foo bar baz▊`)
-- When I hit `my footnote hotkey`
+### Numbered Footnotes
+#### Scenario: No previous numbered (e.g. "[^1]") footnotes exist:
+- Given my cursor is where I want a numbered footnote to exist (e.g. `Foo bar baz▊`)
+- When I hit `auto-numbered footnote hotkey`
 - Then a new footnote marker (e.g. `[^1]`) is inserted where my cursor was (e.g. `Foo bar baz[^1]`)
 - And a new footnote details marker (e.g. `[^1]: `) is inserted on the last line of the document
 - And my cursor is now placed at the end of the detail marker (e.g. `[^1]: ▊`)
 
-### Scenario: Previous numeric (e.g. "[^1]") footnotes exist:
-- Given there is one or more numeric footnotes in my text 
-- And my cursor is where I want a footnote to exist (e.g. `Foo bar[^1] baz▊`)
-- When I hit `my footnote hotkey`
-- Then a new footnote marker with the next numeric index (e.g. `[^2]`) is inserted where my cursor was (e.g. `Foo bar[^1] baz[^2]`)
+#### Scenario: Previous numbered (e.g. "[^1]") footnotes exist:
+- Given there is one or more numbered footnotes in my text 
+- And my cursor is where I want a numbered footnote to exist (e.g. `Foo bar[^1] baz▊`)
+- When I hit `auto-numbered footnote hotkey`
+- Then a new footnote marker with the next numbered index (e.g. `[^2]`) is inserted where my cursor was (e.g. `Foo bar[^1] baz[^2]`)
 - And a new footnote details marker (e.g. `[^2]: `) is inserted on the last line of the document
 - And my cursor is now placed at the end of the detail marker (e.g. `[^2]: ▊`)
 
-### Scenario: Jumping TO a footnote detail
+### Named Footnotes
+#### Scenario: Add a named footnote:
+- Given my cursor is where I want a named footnote to exist (e.g. `Foo bar baz▊`)
+- When I hit `named footnote hotkey`
+- Then an empty footnote marker (e.g. `[^]`) is inserted around my cursor (e.g. `Foo bar baz[^▊]`)
+- Then, I fill in the name I want (e.g. `Foo bar baz[^customName]`)
+- When I hit `named footnote hotkey` again
+- A matching footnote details marker (e.g. `[^customName]: `) is inserted on the last line of the document
+- And my cursor is now placed at the end of the detail marker (e.g. `[^customName]: ▊`)
+
+### Universal
+#### Scenario: Jumping TO a footnote detail
 - Given I'm on a footnote detail line (e.g. `[^1]: ▊`)
-- When I hit `my footnote hotkey`
+- When I hit `auto-numbered footnote hotkey` OR `named footnote hotkey`
 - Then my cursor is placed right after the *first* occurence of this footnote in my text (e.g. `[^1]▊`)
 
-### Scenario: Jumping BACK to a footnote
+#### Scenario: Jumping BACK to a footnote
 - Given I'm on - or next to - a footnote (e.g. `[^1]▊`) in my text
-- When I hit `my footnote hotkey`
+- When I hit `auto-numbered footnote hotkey` OR `named footnote hotkey`
 - Then my cursor is placed to the right of the footnote (e.g. `[^1]: ▊`)
 
 ### Known Limitations or Untested Scenarios
 #### Indices are not updated
-Inserting new footnote in-between two existing footnotes will insert the next numeric index (e.g. `1, 3, 2`). 
+Inserting new auto-numbered footnote in-between two existing footnotes will insert the next numeric index (e.g. `1, 3, 2`). 
 
 It will NOT update the indices according to their natural order (e.g. `1, 2, 3`). 
 
@@ -72,8 +87,13 @@ Example sentence[^1] with two[^3] footnotes[^2] already.
 See "Automatically Re-Index Footnotes" below for a proposed feature
 
 ## Future Possible Feature Ideas
-### Automatically Re-Index Footnotes
-Re-index and re-sort all footnotes when you insert a new one in-between one or more existing numbered footnotes:
+### Suggest Existing Named Footnotes
+When adding a new named footnote, suggest existing footnotes via an EditorSuggest popup. You can pick from the suggestions via arrow keys to save yourself typing if you want to repeat an existing footnote.
+
+**Demo of autosuggest in Templater** ![Suggest](https://user-images.githubusercontent.com/68677082/228691255-f0d8b5ad-f98d-473a-8260-44919c117462.png)
+
+### Automatically Re-Index Numbered Footnotes
+Re-index and re-sort all auto-numbered footnotes when you insert a new one in-between one or more existing numbered footnotes:
 
 ```markdown
 Example sentence[^1] with two▊ footnotes[^2] already.
@@ -82,8 +102,8 @@ Example sentence[^1] with two▊ footnotes[^2] already.
 [^2]: Bar
 ```
 #### Base Scenario
-- Given there are two footnotes already
-- When I enter a new footnote in-between those two
+- Given there are two numbered footnotes already
+- When I enter a new numbered footnote in-between those two
 - Then the NEW footnote gets the index "2" 
 - And the previously second footnote gets the index "3"
 - And the NEW footnote detail is inserted as the second entry at the bottom
@@ -127,12 +147,6 @@ Example sentence[^1] with two[^2] footnotes[^3] already.
   [^1]: The details that
   Span across
   Multiple lines
-  ```
-##### What if... there are non-numeric footnotes in the text?
-  ```markdown
-  Some sentence with existing note[^✝] some more text▊ 
-  
-  [^✝]: Details
   ```
 
 ## Background
