@@ -1,16 +1,16 @@
-import { notEqual } from "assert";
-import { exec } from "child_process";
 import { 
+  addIcon,
   Editor, 
   EditorPosition, 
   EditorSuggest, 
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   MarkdownView, 
-  Plugin 
+  Plugin
 } from "obsidian";
 
-import { CursorPos, clearScreenDown } from "readline";
+//Add chevron-up-square icon from lucide for mobile toolbar (temporary until Obsidian updates to Lucide v0.130.0)
+addIcon("chevron-up-square", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up-square"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><polyline points="8,14 12,10 16,14"></polyline></svg>`);
 
 export default class MyPlugin extends Plugin {
 
@@ -24,6 +24,7 @@ export default class MyPlugin extends Plugin {
     this.addCommand({
       id: "insert-autonumbered-footnote",
       name: "Insert / Navigate Auto-Numbered Footnote",
+      icon: "plus-square",
       checkCallback: (checking: boolean) => {
         if (checking)
           return !!this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -33,6 +34,7 @@ export default class MyPlugin extends Plugin {
     this.addCommand({
       id: "insert-named-footnote",
       name: "Insert / Navigate Named Footnote",
+      icon: "chevron-up-square",
       checkCallback: (checking: boolean) => {
         if (checking)
           return !!this.app.workspace.getActiveViewOfType(MarkdownView);
