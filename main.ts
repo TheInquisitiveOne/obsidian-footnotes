@@ -14,11 +14,11 @@ addIcon("chevron-up-square", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
 
 export default class MyPlugin extends Plugin {
 
-  private NumReOnlyMarkers = /\[\^(\d+)\]/gi;
-  private NamedDetailLineRegex = /\[\^([^\[\]]+)\]:/;
-  private NamedAllDetails = /\[\^([^\[\]]+)\]:/g;
-  private NamedReOnlyMarkers = /\[\^([^\[\]]+)\](?!:)/dg;
-  private NamedRe = /(?<=\[\^)([^\[\]]+)(?=\])/;
+  private AllMarkers = /\[\^([^\[\]]+)\](?!:)/dg;
+  private AllNumberedMarkers = /\[\^(\d+)\]/gi;
+  private AllDetailsNameOnly = /\[\^([^\[\]]+)\]:/g;
+  private DetailInLine = /\[\^([^\[\]]+)\]:/;
+  private ExtractNameFromFootnote = /(?<=\[\^)([^\[\]]+)(?=\])/;
 
   async onload() {
     this.addCommand({
@@ -43,6 +43,8 @@ export default class MyPlugin extends Plugin {
     });
   }
 
+  //UNIVERSAL FUNCTIONS
+
   private listExistingFootnoteDetails(
     doc: Editor
   ) {
@@ -51,7 +53,7 @@ export default class MyPlugin extends Plugin {
     //search each line for footnote details and add to list
     for (let i = 0; i < doc.lineCount(); i++) {
           let theLine = doc.getLine(i);
-          let lineMatch = theLine.match(this.NamedAllDetails);
+          let lineMatch = theLine.match(this.AllDetailsNameOnly);
           if (lineMatch) {
             let temp = lineMatch[0];
             temp = temp.replace("[^","");
@@ -84,7 +86,7 @@ export default class MyPlugin extends Plugin {
       let theLine = doc.getLine(i);
       let lineMatch;
 
-      while ((lineMatch = this.NamedReOnlyMarkers.exec(theLine)) != null) {
+      while ((lineMatch = this.AllMarkers.exec(theLine)) != null) {
         markerEntry = {
           footnote: lineMatch[0],
           lineNum: i,
@@ -95,30 +97,6 @@ export default class MyPlugin extends Plugin {
     }
     return FootnoteMarkerInfo;
   }
-  
-  insertAutonumFootnote() {
-    const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
-
-    if (!mdView) return false;
-    if (mdView.editor == undefined) return false;
-
-    const doc = mdView.editor;
-    const cursorPosition = doc.getCursor();
-    const lineText = doc.getLine(cursorPosition.line);
-    const markdownText = mdView.data;
-
-    if (this.shouldJumpFromDetailToMarker(lineText, cursorPosition, doc))
-      return;
-    if (this.shouldJumpFromMarkerToDetail(lineText, cursorPosition, doc))
-      return;
-
-    return this.shouldCreateAutonumFootnote(
-      lineText,
-      cursorPosition,
-      doc,
-      markdownText
-    );
-  }
 
   private shouldJumpFromDetailToMarker(
     lineText: string,
@@ -128,7 +106,7 @@ export default class MyPlugin extends Plugin {
     // check if we're in a footnote detail line ("[^1]: footnote")
     // if so, jump cursor back to the footnote in the text
     // https://github.com/akaalias/obsidian-footnotes#improved-quick-navigation
-    let match = lineText.match(this.NamedDetailLineRegex);
+    let match = lineText.match(this.DetailInLine);
     if (match) {
       let s = match[0];
       let index = s.replace("[^", "");
@@ -172,7 +150,7 @@ export default class MyPlugin extends Plugin {
     let currentLine = cursorPosition.line;
     let footnotesOnLine = FootnoteMarkerInfo.filter(markerEntry => markerEntry.lineNum === currentLine);
 
-    if (footnotesOnLine != null && (footnotesOnLine.length-1 > 0)) {
+    if (footnotesOnLine != null) {
       for (let i = 0; i <= footnotesOnLine.length-1; i++) {
         if (footnotesOnLine[i].footnote !== null) {
           let marker = footnotesOnLine[i].footnote;
@@ -188,21 +166,19 @@ export default class MyPlugin extends Plugin {
       }
     }
     if (markerTarget !== null) {
-      // extract index
-      let match = markerTarget.match(this.NamedRe);
+      // extract name
+      let match = markerTarget.match(this.ExtractNameFromFootnote);
       if (match) {
-        let indexString = match[0];
-        //let markerIndex = Number(indexString);
+        let footnoteName = match[0];
 
-        // find the first line with this detail marker index in it.
+        // find the first line with this detail marker name in it.
         for (let i = 0; i < doc.lineCount(); i++) {
           let theLine = doc.getLine(i);
-          let lineMatch = theLine.match(this.NamedDetailLineRegex);
+          let lineMatch = theLine.match(this.DetailInLine);
           if (lineMatch) {
             // compare to the index
-            let indexMatch = lineMatch[1];
-            //let indexMatchNumber = Number(indexMatch);
-            if (indexMatch == indexString) {
+            let nameMatch = lineMatch[1];
+            if (nameMatch == footnoteName) {
               doc.setCursor({ line: i, ch: lineMatch[0].length + 1 });
               return true;
             }
@@ -213,6 +189,33 @@ export default class MyPlugin extends Plugin {
     return false;
   }
 
+  //FUNCTIONS FOR AUTONUMBERED FOOTNOTES
+  
+  insertAutonumFootnote() {
+    const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+    if (!mdView) return false;
+    if (mdView.editor == undefined) return false;
+
+    const doc = mdView.editor;
+    const cursorPosition = doc.getCursor();
+    const lineText = doc.getLine(cursorPosition.line);
+    const markdownText = mdView.data;
+
+    if (this.shouldJumpFromDetailToMarker(lineText, cursorPosition, doc))
+      return;
+    if (this.shouldJumpFromMarkerToDetail(lineText, cursorPosition, doc))
+      return;
+
+    return this.shouldCreateAutonumFootnote(
+      lineText,
+      cursorPosition,
+      doc,
+      markdownText
+    );
+  }
+
+
   private shouldCreateAutonumFootnote(
     lineText: string,
     cursorPosition: EditorPosition,
@@ -220,7 +223,7 @@ export default class MyPlugin extends Plugin {
     markdownText: string
   ) {
     // create new footnote with the next numerical index
-    let matches = markdownText.match(this.NumReOnlyMarkers);
+    let matches = markdownText.match(this.AllNumberedMarkers);
     let numbers: Array<number> = [];
     let currentMax = 1;
 
@@ -280,8 +283,7 @@ export default class MyPlugin extends Plugin {
   }
 
 
-  // Functions for Named Footnotes
-
+  //FUNCTIONS FOR NAMED FOOTNOTES
 
   insertNamedFootnote() {
     const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -323,7 +325,7 @@ export default class MyPlugin extends Plugin {
     // if so, which one?
     // does this footnote marker have a detail line?
     // if not, create it and place cursor there
-    let reOnlyMarkersMatches = lineText.match(this.NamedReOnlyMarkers);
+    let reOnlyMarkersMatches = lineText.match(this.AllMarkers);
 
     let markerTarget = null;
 
@@ -345,7 +347,7 @@ export default class MyPlugin extends Plugin {
 
     if (markerTarget != null) {
       //extract footnote
-      let match = markerTarget.match(this.NamedRe)
+      let match = markerTarget.match(this.ExtractNameFromFootnote)
       //find if this footnote exists by listing existing footnote details
       if (match) {
         let footnoteId = match[0];
