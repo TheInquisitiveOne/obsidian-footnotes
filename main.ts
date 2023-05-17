@@ -18,7 +18,7 @@ export default class MyPlugin extends Plugin {
   private AllNumberedMarkers = /\[\^(\d+)\]/gi;
   private AllDetailsNameOnly = /\[\^([^\[\]]+)\]:/g;
   private DetailInLine = /\[\^([^\[\]]+)\]:/;
-  private ExtractNameFromFootnote = /(?<=\[\^)([^\[\]]+)(?=\])/;
+  private ExtractNameFromFootnote = /(\[\^)([^\[\]]+)(?=\])/;
 
   async onload() {
     this.addCommand({
@@ -169,7 +169,7 @@ export default class MyPlugin extends Plugin {
       // extract name
       let match = markerTarget.match(this.ExtractNameFromFootnote);
       if (match) {
-        let footnoteName = match[0];
+        let footnoteName = match[2];
 
         // find the first line with this detail marker name in it.
         for (let i = 0; i < doc.lineCount(); i++) {
@@ -350,8 +350,8 @@ export default class MyPlugin extends Plugin {
       let match = markerTarget.match(this.ExtractNameFromFootnote)
       //find if this footnote exists by listing existing footnote details
       if (match) {
-        let footnoteId = match[0];
-        
+        let footnoteId = match[2];
+
         let list: string[] = this.listExistingFootnoteDetails(doc);
         
         // Check if the list is empty OR if the list doesn't include current footnote
