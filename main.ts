@@ -41,6 +41,16 @@ export default class MyPlugin extends Plugin {
         this.insertNamedFootnote();
       }
     });
+    this.addCommand({
+      id: "split-screen-footnote",
+      name: "Split Screen Footnote Panel",
+      icon: "",
+      checkCallback: (checking: boolean) => {
+        if (checking)
+          return !!this.app.workspace.getActiveViewOfType(MarkdownView);
+        this.insertSplitScreenPanel();
+      }
+    });
   }
 
   //UNIVERSAL FUNCTIONS
@@ -405,4 +415,7 @@ export default class MyPlugin extends Plugin {
     //open footnotePicker popup
     
   }
+
+  //split screen logic
+  insertSplitScreenPanel(){}
 }
